@@ -10,6 +10,8 @@ function print_grid() {
                 printf "* "
             elif [ "${!n}" == 1 ]; then
                 printf "X "
+            elif [ "${!n}" == "!" ]; then
+                printf "! "
             else
                 printf "0 "
             fi

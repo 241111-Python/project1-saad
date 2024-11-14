@@ -19,7 +19,7 @@ data="tictactoe_data.csv"
 
 if [ ! -f "$data" ]; then
   touch "$data"
-  echo "date", "winner", "num_moves", "board" > $data
+  echo "date", "winner", "num_moves", "first_move", "board" > $data
   echo -e "Created $data\n"
 fi
 
@@ -27,6 +27,16 @@ fi
 board=(0 0 0 0 0 0 0 0 0)
 num_moves=0
 game_date=$(date '+%Y-%m-%d %H:%M:%S')
+first_move=0
+first_move_recorded=false
+
+# Function to record first game move
+function capture_first_move() {
+    if [ $first_move_recorded == false ]; then
+        first_move=$1
+        first_move_recorded=true
+    fi
+}
 
 # Function to declare victory and write out game stats
 function game_end() {
@@ -36,7 +46,7 @@ function game_end() {
     else
         echo -e "\nDRAW"
     fi
-    echo "$game_date,$1,$num_moves,${board[*]}" >> $data
+    echo "$game_date,$1,$num_moves,$first_move,${board[*]}" >> $data
     exit 0
 }
 
@@ -49,11 +59,6 @@ function win_check() {
 
 # Function to check board state
 function check_board_state() {
-    # Check draw status
-    if [ $num_moves == 9 ]; then
-        game_end 0
-    fi
-
     # Check game end
     target=0
     target_row=0
@@ -78,6 +83,11 @@ function check_board_state() {
 
     ((target+=(board[2]+board[4]+board[6]))) 
     win_check $target
+
+    # Check draw status
+    if [ $num_moves == 9 ]; then
+        game_end 0
+    fi
 }
 
 # AI selects choice from board
@@ -95,6 +105,7 @@ function ai_move() {
     ai_choice="${valid_choices[$random_select]}" # Selects valid square choice
 
     # Make choice and check board
+    capture_first_move "$ai_choice"
     (( board[ai_choice]+=$1 ))
     (( num_moves+=1 ))
     check_board_state
@@ -108,10 +119,11 @@ while true; do
     if $player_1_human; then
         choice_invalid=true
         while [[ $choice_invalid == true ]];
-            do read -rp "Select square (1-9): " selection
-            if ((selection >= 1 && selection <= 9)) && \
-            [[ board[$selection-1] -eq 0 ]]; then
-                    (( board[selection-1]++ ))
+            do read -rp "Select square (1-9): " player_choice
+            if ((player_choice >= 1 && player_choice <= 9)) && \
+            [[ board[$player_choice-1] -eq 0 ]]; then
+                    capture_first_move "$player_choice"
+                    (( board[player_choice-1]++ ))
                     (( num_moves+=1 ))
                     choice_invalid=false
                 else
@@ -121,6 +133,7 @@ while true; do
         done
     else
         ai_move 1
+        print_grid "${board[@]}"
     fi
 
     # Player 2 move
