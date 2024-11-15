@@ -2,9 +2,10 @@
 
 # Imports
 source ./game_library.sh
-data_file="tictactoe_data.csv"
 
 # Checks if data exists
+data_file="tictactoe_data.csv"
+
 if [ ! -f "$data_file" ]; then
   echo "No data available"
   exit 0
@@ -13,6 +14,8 @@ fi
 # Setup game stats and records files
 stats="game_stats.txt"
 records="game_record.txt"
+records_tmp="game_record_tmp.txt"
+touch "$records_tmp"
 
 if [ ! -f "$stats" ]; then
   touch "$stats"
@@ -27,8 +30,10 @@ fi
 # Print overall game stats
 num_games=0
 games_won=0
+games_drawn=0
 avg_moves=0
 win_rate=0
+draw_rate=0
 declare -A first_move_win_count
 {
 read -r
@@ -38,8 +43,11 @@ do
     avg_moves=$(echo "scale=2; ($avg_moves*($num_games-1)+$moves) / $num_games" | bc) # Calculate moving average
     if [ "$winner" == 1 ]; then
         (( games_won+=1 ))
+    elif [ "$winner" == 0 ]; then
+        (( games_drawn+=1 ))
     fi
     win_rate=$(echo "scale=2; ($games_won / $num_games)*100" | bc) # using bc for floating point calculation
+    draw_rate=$(echo "scale=2; ($games_drawn / $num_games)*100" | bc)
     if [ "$winner" != 0 ]; then
         (( first_move_win_count[$first_move]+=1 ))
     fi
@@ -64,6 +72,7 @@ echo "Last Ran: $(date '+%Y-%m-%d %H:%M:%S')"
 echo "=============================="
 echo "Total Games Played: $num_games"
 echo "Win percentage: $win_rate%"
+echo "Draw percentage: $draw_rate%"
 echo "Average number of moves: $avg_moves"
 echo "Best first move: Square $((best_move+1))"
 print_grid "${grid[@]}"
@@ -71,10 +80,6 @@ echo
 } > $stats
 
 # Print games
-{
-  echo "Game Record"
-  echo "=============================="
-} > $records
 {
 read -r 
 while IFS=, read -r date winner moves first_move board
@@ -89,6 +94,16 @@ do
         echo "Draw"
     fi
     echo "Number of Moves: $moves"
-    } >> $records
+    } >> $records_tmp
 done
 } < $data_file
+
+# Display the records in a grid format
+column_count=3
+while (( (num_games % column_count) != 0 )); do
+  ((column_count--)) # Attempt to find an appropriate number of columns
+done
+
+# Remove whitespace and pipe into pr to transform data into grid format
+tail -n +2 "$records_tmp" | pr -t -$column_count > $records
+rm $records_tmp
