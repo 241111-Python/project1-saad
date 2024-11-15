@@ -15,3 +15,6 @@ Reads data generated from running games and produces summary statistics.
 
 ### cleanup.sh
 Deletes data files produced by game and analyzer. 
+
+### demo.sh
+Cleans directory, runs *n* simulated games, and prints analysis. 

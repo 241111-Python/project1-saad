@@ -4,13 +4,23 @@
 source ./game_library.sh
 
 # Script options
+function usage () {
+    echo "Usage: $0 [ -ah ]"
+    echo "  -a          Simulates a game between two computer opponents"
+    echo "  -h          Show help message"
+    exit 1
+}
+
 player_1_human=true
-while getopts 'a' flag; do
+while getopts 'ah' flag; do
   case "${flag}" in
     a) # sets player 1 to ai/random selection
     player_1_human=false ;;
+    h) #
+    usage ;;
     *) # Invalid option
     printf "Option not recognized\n"
+    usage
   esac
 done
 

@@ -99,7 +99,7 @@ done
 } < $data_file
 
 # Display the records in a grid format
-column_count=4
+column_count=3
 while (( (num_games % column_count) != 0 )); do
   ((column_count--)) # Attempt to find an appropriate number of columns
 done
