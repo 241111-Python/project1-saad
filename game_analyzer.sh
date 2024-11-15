@@ -4,6 +4,12 @@
 source ./game_library.sh
 data_file="tictactoe_data.csv"
 
+# Checks if data exists
+if [ ! -f "$data_file" ]; then
+  echo "No data available"
+  exit 0
+fi
+
 # Setup game stats and records files
 stats="game_stats.txt"
 records="game_record.txt"
@@ -33,8 +39,10 @@ do
     if [ "$winner" == 1 ]; then
         (( games_won+=1 ))
     fi
-    win_rate=$(echo "scale=2; $games_won / $num_games" | bc) # using bc for floating point calculation
-    (( first_move_win_count[$first_move]+=1 ))
+    win_rate=$(echo "scale=2; ($games_won / $num_games)*100" | bc) # using bc for floating point calculation
+    if [ "$winner" != 0 ]; then
+        (( first_move_win_count[$first_move]+=1 ))
+    fi
 done
 } < $data_file
 
@@ -51,7 +59,7 @@ done
 grid=(0 0 0 0 0 0 0 0 0 0)
 grid[best_move]="!"
 {
-echo "Aggregate Statistics for games"
+echo "Aggregate Statistics for Games"
 echo "Last Ran: $(date '+%Y-%m-%d %H:%M:%S')"
 echo "=============================="
 echo "Total Games Played: $num_games"

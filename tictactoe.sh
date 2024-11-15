@@ -101,7 +101,7 @@ function ai_move() {
         fi
         (( n++ ))
     done
-    random_select=$(( RANDOM % ${#valid_choices[@]} )) # Randomly generates index from alid choices array
+    random_select=$(( RANDOM % ${#valid_choices[@]} )) # Randomly generates index from valid choices array
     ai_choice="${valid_choices[$random_select]}" # Selects valid square choice
 
     # Make choice and check board
